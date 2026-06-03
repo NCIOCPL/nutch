@@ -16,8 +16,8 @@
    limitations under the License.
 -->
 
-<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd" 
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
   xmlns:ns0="http://ant.apache.org/ivy/maven" version="2.0">
   <info organisation="org.apache.nutch" module="${ant.project.name}">
       <license name="Apache 2.0"/>
@@ -39,6 +39,15 @@
   <dependencies>
       <dependency org="org.apache.kafka" name="kafka_2.12" rev="3.7.0"/>
       <dependency org="org.apache.kafka" name="connect-json" rev="3.7.0"/>
+      <dependency org="io.netty" name="netty-buffer" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-codec" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-common" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-handler" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-resolver" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.136.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.136.Final" force="true"/>
   </dependencies>
 
 </ivy-module>

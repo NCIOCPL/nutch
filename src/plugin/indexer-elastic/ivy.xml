@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<!-- 
+<!--
    Licensed to the Apache Software Foundation (ASF) under one or more
    contributor license agreements.  See the NOTICE file distributed with
    this work for additional information regarding copyright ownership.
@@ -15,8 +15,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 -->
-<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd" 
+<ivy-module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="http://ant.apache.org/ivy/schemas/ivy.xsd"
   xmlns:ns0="http://ant.apache.org/ivy/maven" version="2.0">
   <info organisation="org.apache.nutch" module="${ant.project.name}">
     <license name="Apache 2.0" />
@@ -36,21 +36,41 @@
   </publications>
 
   <dependencies>
-    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-high-level-client" rev="7.10.2"/>
-    <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-backward-codecs" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-core" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-grouping" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-highlighter" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-join" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-memory" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-misc" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-queries" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-queryparser" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-sandbox" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-spatial-extras" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-spatial3d" rev="8.11.2"/>
-    <dependency org="org.apache.lucene" name="lucene-suggest" rev="8.11.2"/>
+    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-high-level-client" rev="7.17.28">
+      <!-- Nutch core supplies Log4j 2.25.5 -->
+      <exclude org="org.apache.logging.log4j" module="*"/>
+      <!-- Substitute at.yawk.lz4 to avoid CVE-2025-12183, per GitHub advisor recommendation.
+            https://github.com/advisories/GHSA-vqf4-7m7x-wgfc -->
+      <exclude org="org.lz4" module="lz4-java"/>
+    </dependency>
+    <!-- Add the at.yawk.lz4 dependency to replace the excluded lz4-java -->
+    <dependency org="at.yawk.lz4" name="lz4-java" rev="1.11.1"/>
+
+    <!-- Force com.fasterxml.jackson.* dependencies to use version 2.18.9,  -->
+    <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.9" force="true"/>
+    <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.9" force="true"/>
+    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.9" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.9" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-smile" rev="2.18.9" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-yaml" rev="2.18.9" force="true"/>
+
+    <!-- Jackson YAML 2.18.x uses SnakeYAML 2.3. -->
+    <dependency org="org.yaml" name="snakeyaml" rev="2.3" force="true"/>
+
+    <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-backward-codecs" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-core" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-grouping" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-highlighter" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-join" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-memory" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-misc" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-queries" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-queryparser" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-sandbox" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-spatial-extras" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-spatial3d" rev="8.11.3"/>
+    <dependency org="org.apache.lucene" name="lucene-suggest" rev="8.11.3"/>
   </dependencies>
-  
+
 </ivy-module>
