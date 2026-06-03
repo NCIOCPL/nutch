@@ -15,7 +15,8 @@
  limitations under the License.
 -->
 
-1. Upgrade Elasticsearch dependency in src/plugin/indexer-elastic/ivy.xml
+1. Upgrade the Elasticsearch Java API Client and low-level REST client
+   dependencies in src/plugin/indexer-elastic/ivy.xml
 
 2. Upgrade the Elasticsearch specific dependencies in src/plugin/indexer-elastic/plugin.xml
    To get the list of dependencies and their versions execute:
@@ -24,12 +25,12 @@
     $ ls lib | sed 's/^/    <library name="/g' | sed 's/$/"\/>/g'
 
    In the plugin.xml replace all lines between
-      <!-- Elastic Rest Client dependencies -->
+      <!-- Elastic Rest Client Dependencies -->
    and
-      <!-- end of Elastic Rest Client dependencies -->
+      <!-- end of Elastic Rest Client Dependencies -->
    with the output of the command above.
 
-4. (Optionally) remove overlapping dependencies between indexer-elastic and Nutch core dependencies:
+3. (Optionally) remove overlapping dependencies between indexer-elastic and Nutch core dependencies:
    - check for libs present both in
        build/lib
      and
@@ -40,11 +41,11 @@
    - but it should be made sure that the library versions in ivy/ivy.xml correspond to
      those required by Tika
 
-5. Remove the locally "installed" dependencies in src/plugin/indexer-elastic/lib/:
+4. Remove the locally "installed" dependencies in src/plugin/indexer-elastic/lib/:
 
     $ rm -rf lib/
 
-6. Build Nutch and run all unit tests:
+5. Build Nutch and run all unit tests:
 
     $ cd ../../../
     $ ant clean runtime test
