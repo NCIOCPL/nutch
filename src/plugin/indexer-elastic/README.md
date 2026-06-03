@@ -47,8 +47,8 @@ Each parameter has the form `<param name="<name>" value="<value>"/>` and the par
 
 Parameter Name | Description | Default value
 --|--|--
-host | Comma-separated list of hostnames to send documents to using [TransportClient](https://static.javadoc.io/org.elasticsearch/elasticsearch/5.3.0/org/elasticsearch/client/transport/TransportClient.html). Either host and port must be defined. | 
-port | The port to connect to using [TransportClient](https://static.javadoc.io/org.elasticsearch/elasticsearch/5.3.0/org/elasticsearch/client/transport/TransportClient.html). | 9300
+host | Comma-separated list of hostnames to send documents to using the Elasticsearch Java API Client and low-level REST client. Either host and port must be defined. | 
+port | The REST port to connect to the Elasticsearch server. | 9200
 scheme | The scheme (http or https) to connect to elastic server. | http
 index | Default index to send documents to. | nutch
 username | Username for auth credentials | elastic
@@ -56,6 +56,6 @@ password | Password for auth credentials | ""
 auth | Whether to enable HTTP basic authentication with elastic. Use `username` and `password` properties to configure your credentials. | false
 max.bulk.docs | Maximum size of the bulk in number of documents. | 250
 max.bulk.size | Maximum size of the bulk in bytes. | 2500500
-exponential.backoff.millis | Initial delay for the [BulkProcessor](https://static.javadoc.io/org.elasticsearch/elasticsearch/5.3.0/org/elasticsearch/action/bulk/BulkProcessor.html) exponential backoff policy. | 100
-exponential.backoff.retries | Number of times the [BulkProcessor](https://static.javadoc.io/org.elasticsearch/elasticsearch/5.3.0/org/elasticsearch/action/bulk/BulkProcessor.html) exponential backoff policy should retry bulk operations. | 10
-bulk.close.timeout | Number of seconds allowed for the [BulkProcessor](https://static.javadoc.io/org.elasticsearch/elasticsearch/5.3.0/org/elasticsearch/action/bulk/BulkProcessor.html) to complete its last operation. | 600
+exponential.backoff.millis | Initial delay for the [BulkIngester](https://artifacts.elastic.co/javadoc/co/elastic/clients/elasticsearch-java/8.16.6/co/elastic/clients/elasticsearch/_helpers/bulk/BulkIngester.html) retry policy. | 100
+exponential.backoff.retries | Number of times the [BulkIngester](https://artifacts.elastic.co/javadoc/co/elastic/clients/elasticsearch-java/8.16.6/co/elastic/clients/elasticsearch/_helpers/bulk/BulkIngester.html) retry policy should retry retryable bulk operations. | 10
+bulk.close.timeout | Number of seconds allowed for the [BulkIngester](https://artifacts.elastic.co/javadoc/co/elastic/clients/elasticsearch-java/8.16.6/co/elastic/clients/elasticsearch/_helpers/bulk/BulkIngester.html) to complete its last operation. | 600
