@@ -56,10 +56,10 @@ import org.elasticsearch.client.RestClientBuilder;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.unit.ByteSizeUnit;
 import org.elasticsearch.common.unit.ByteSizeValue;
-import org.elasticsearch.common.unit.TimeValue;
+import org.elasticsearch.core.TimeValue;
 import org.elasticsearch.client.RestClientBuilder.HttpClientConfigCallback;
-import org.elasticsearch.common.xcontent.XContentBuilder;
-import org.elasticsearch.common.xcontent.XContentFactory;
+import org.elasticsearch.xcontent.XContentBuilder;
+import org.elasticsearch.xcontent.XContentFactory;
 import org.elasticsearch.client.RequestOptions;
 
 import org.slf4j.Logger;
@@ -162,7 +162,7 @@ public class ElasticIndexWriter implements IndexWriter {
    * Generates a RestHighLevelClient with the hosts given
    * @param parameters implementation specific {@link org.apache.nutch.indexer.IndexWriterParams}
    * @return an initialized {@link org.elasticsearch.client.RestHighLevelClient}
-   * @throws IOException if there is an error reading the 
+   * @throws IOException if there is an error reading the
    * {@link org.apache.nutch.indexer.IndexWriterParams}
    */
   protected RestHighLevelClient makeClient(IndexWriterParams parameters)
