@@ -208,6 +208,7 @@ This product bundles some components that are also licensed under
 the Apache License Version 2.0:
 
 
+co.elastic.clients:elasticsearch-java
 com.amazonaws:aws-java-sdk-cloudsearch
 com.amazonaws:aws-java-sdk-core
 com.beust:jcommander
@@ -494,20 +495,7 @@ org.eclipse.jetty.toolchain:jetty-servlet-api
 org.eclipse.jetty.websocket:websocket-api
 org.eclipse.jetty.websocket:websocket-client
 org.eclipse.jetty.websocket:websocket-common
-org.elasticsearch:elasticsearch
-org.elasticsearch:elasticsearch-cli
-org.elasticsearch:elasticsearch-core
-org.elasticsearch:elasticsearch-geo
-org.elasticsearch:elasticsearch-secure-sm
-org.elasticsearch:elasticsearch-x-content
-org.elasticsearch:jna
 org.elasticsearch.client:elasticsearch-rest-client
-org.elasticsearch.client:elasticsearch-rest-high-level-client
-org.elasticsearch.plugin:aggs-matrix-stats-client
-org.elasticsearch.plugin:lang-mustache-client
-org.elasticsearch.plugin:mapper-extras-client
-org.elasticsearch.plugin:parent-join-client
-org.elasticsearch.plugin:rank-eval-client
 org.gagravarr:vorbis-java-core
 org.gagravarr:vorbis-java-tika
 org.jetbrains:annotations
@@ -721,6 +709,8 @@ Eclipse Public License - Version 2.0
 
 (licenses-binary/LICENSE-eclipse-public-license---version-2.0.txt)
 
+jakarta.json:jakarta.json-api
+org.eclipse.parsson:parsson
 org.eclipse.jetty:jetty-http
 org.eclipse.jetty:jetty-io
 org.eclipse.jetty:jetty-security

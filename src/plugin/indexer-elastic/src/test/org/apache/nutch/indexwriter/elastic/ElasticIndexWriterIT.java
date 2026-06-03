@@ -17,8 +17,14 @@
 package org.apache.nutch.indexwriter.elastic;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch.core.GetResponse;
+import co.elastic.clients.json.jackson.JacksonJsonpMapper;
+import co.elastic.clients.transport.ElasticsearchTransport;
+import co.elastic.clients.transport.rest_client.RestClientTransport;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.http.HttpHost;
 import org.apache.nutch.indexer.AbstractIndexWriterIT;
@@ -26,17 +32,15 @@ import org.apache.nutch.indexer.IndexWriter;
 import org.apache.nutch.indexer.IndexWriterParams;
 import org.apache.nutch.indexer.NutchDocument;
 import org.apache.nutch.util.NutchConfiguration;
-import org.elasticsearch.action.get.GetRequest;
-import org.elasticsearch.action.get.GetResponse;
-import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.elasticsearch.ElasticsearchContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -47,13 +51,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ElasticIndexWriterIT extends AbstractIndexWriterIT {
 
   private static final String ELASTICSEARCH_IMAGE =
-      "docker.elastic.co/elasticsearch/elasticsearch:7.10.2";
+      "docker.elastic.co/elasticsearch/elasticsearch:8.16.6";
+  private static final String TEST_INDEX = "test-index";
 
   @Container
   private static final ElasticsearchContainer elasticsearchContainer =
       new ElasticsearchContainer(ELASTICSEARCH_IMAGE)
           .withEnv("discovery.type", "single-node")
-          .withEnv("xpack.security.enabled", "false");
+          .withEnv("xpack.security.enabled", "false")
+          .withEnv("ES_JAVA_OPTS", "-Xms512m -Xmx512m");
 
   private ElasticIndexWriter indexWriter;
   private Configuration conf;
@@ -67,7 +73,7 @@ public class ElasticIndexWriterIT extends AbstractIndexWriterIT {
     Map<String, String> params = new HashMap<>();
     params.put(ElasticConstants.HOSTS, elasticsearchContainer.getHost());
     params.put(ElasticConstants.PORT, String.valueOf(elasticsearchContainer.getMappedPort(9200)));
-    params.put(ElasticConstants.INDEX, "test-index");
+    params.put(ElasticConstants.INDEX, TEST_INDEX);
     params.put(ElasticConstants.SCHEME, "http");
 
     IndexWriterParams writerParams = new IndexWriterParams(params);
@@ -98,16 +104,54 @@ public class ElasticIndexWriterIT extends AbstractIndexWriterIT {
 
   @Override
   public void verifyDocumentWritten(String docId, String expectedTitle) throws Exception {
-    try (RestHighLevelClient client = new RestHighLevelClient(
+    GetResponse<Map> getResponse = getDocument(docId);
+    assertTrue(getResponse.found(), "Document should exist in index");
+    assertNotNull(getResponse.source());
+    assertEquals(expectedTitle, getResponse.source().get("title"));
+  }
+
+  @Test
+  void testWriteMultiValueField() throws Exception {
+    NutchDocument doc = createTestDocument("test-doc-multi-value",
+        "Multi Value Document", "");
+    doc.add("tag", "one");
+    doc.add("tag", "two");
+
+    indexWriter.write(doc);
+    indexWriter.commit();
+    tearDownIndexWriter();
+
+    GetResponse<Map> getResponse = getDocument("test-doc-multi-value");
+    assertTrue(getResponse.found(), "Document should exist in index");
+    Object tags = getResponse.source().get("tag");
+    assertInstanceOf(List.class, tags);
+    assertEquals(List.of("one", "two"), tags);
+  }
+
+  @Test
+  void testDeleteRemovesDocument() throws Exception {
+    String docId = "test-doc-elastic-delete";
+    NutchDocument doc = createTestDocument(docId, "Document to Delete", "");
+
+    indexWriter.write(doc);
+    indexWriter.commit();
+    indexWriter.delete(docId);
+    indexWriter.commit();
+    tearDownIndexWriter();
+
+    GetResponse<Map> getResponse = getDocument(docId);
+    assertFalse(getResponse.found(), "Document should be deleted from index");
+  }
+
+  private GetResponse<Map> getDocument(String docId) throws Exception {
+    try (ElasticsearchTransport transport = new RestClientTransport(
         RestClient.builder(
             new HttpHost(elasticsearchContainer.getHost(),
                 elasticsearchContainer.getMappedPort(9200),
-                "http")))) {
-      GetRequest getRequest = new GetRequest("test-index", docId);
-      GetResponse getResponse = client.get(getRequest, RequestOptions.DEFAULT);
-      assertTrue(getResponse.isExists(), "Document should exist in index");
-      assertNotNull(getResponse.getSource());
-      assertEquals(expectedTitle, getResponse.getSource().get("title"));
+                "http")).build(),
+        new JacksonJsonpMapper())) {
+      ElasticsearchClient client = new ElasticsearchClient(transport);
+      return client.get(get -> get.index(TEST_INDEX).id(docId), Map.class);
     }
   }
 }

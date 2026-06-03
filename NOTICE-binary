@@ -341,6 +341,10 @@ AOP alliance (http://aopalliance.sourceforge.net)
 - license: Public Domain
   (licenses-binary/LICENSE-public-domain.txt)
 
+# co.elastic.clients:elasticsearch-java
+Elasticsearch Java API Client (https://github.com/elastic/elasticsearch-java/)
+- license: The Apache Software License, Version 2.0
+
 # com.adobe.xmp:xmpcore
 Adobe XMPCore (https://www.adobe.com/devnet/xmp/library/eula-xmp-library-java.html)
 - license: The BSD 3-Clause License (BSD3)
@@ -985,6 +989,11 @@ Jakarta Annotations API (https://projects.eclipse.org/projects/ee4j.ca)
 - license: EPL 2.0
   (licenses-binary/LICENSE-epl-2.0.txt)
 
+# jakarta.json:jakarta.json-api
+Jakarta JSON Processing API (https://github.com/eclipse-ee4j/jsonp)
+- license: Eclipse Public License 2.0
+  (licenses-binary/LICENSE-epl-2.0.txt)
+
 # jakarta.jws:jakarta.jws-api
 Jakarta Web Services Metadata API (https://github.com/eclipse-ee4j/jws-api)
 - license: Eclipse Distribution License - v 1.0
@@ -1254,48 +1263,12 @@ Jetty :: Websocket :: Client
 Jetty :: Websocket :: Common
 - license: Apache Software License - Version 2.0
 
-# org.elasticsearch:elasticsearch
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:elasticsearch-cli
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:elasticsearch-core
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:elasticsearch-geo
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:elasticsearch-secure-sm
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:elasticsearch-x-content
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch:jna
-Elastic JNA Distribution (https://github.com/java-native-access/jna)
-- license: Apache License, Version 2.0
+# org.eclipse.parsson:parsson
+Eclipse Parsson
+- license: Eclipse Public License 2.0
+  (licenses-binary/LICENSE-epl-2.0.txt)
 
 # org.elasticsearch.client:elasticsearch-rest-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch.client:elasticsearch-rest-high-level-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-
-# org.elasticsearch.plugin:aggs-matrix-stats-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch.plugin:lang-mustache-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch.plugin:mapper-extras-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch.plugin:parent-join-client
-The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
-- license: The Apache Software License, Version 2.0
-# org.elasticsearch.plugin:rank-eval-client
 The Apache Software License, Version 2.0 (https://github.com/elastic/elasticsearch)
 - license: The Apache Software License, Version 2.0
 
