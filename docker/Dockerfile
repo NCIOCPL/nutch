@@ -45,13 +45,16 @@ RUN apk update
 RUN apk --no-cache add apache-ant bash git openjdk11 supervisor
 
 # Establish environment variables
-RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.bashrc
-RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.ashrc
-ENV JAVA_HOME='/usr/lib/jvm/java-11-openjdk'
+RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
+RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
+ENV JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
+ENV NUTCH_JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
 ENV NUTCH_HOME='/root/nutch_source/runtime/local'
 
-# Checkout and build the Nutch master branch (1.x)
-RUN git clone https://github.com/apache/nutch.git nutch_source && \
+# Clone from our fork.
+RUN git clone --single-branch --branch ticket/82-es8-update https://github.com/nciocpl/nutch.git nutch_source && \
      cd nutch_source && \
      ant runtime && \
      rm -rf build/ && \
@@ -78,7 +81,7 @@ ENV SERVER_HOST=$SERVER_HOST
 RUN mkdir -p /var/log/supervisord
 COPY ./config/supervisord_startserver.conf /etc/supervisord.conf
 
-# Expose port for server which can only be accessed if 
+# Expose port for server which can only be accessed if
 # the same port is published when the container is run.
 EXPOSE $SERVER_PORT
 
@@ -105,7 +108,7 @@ RUN git clone https://github.com/apache/nutch-webapp.git nutch_webapp && \
 RUN mkdir -p /var/log/supervisord
 COPY ./config/supervisord_startserver_webapp.conf /etc/supervisord.conf
 
-# Expose ports for server and webapp, these can only be accessed if 
+# Expose ports for server and webapp, these can only be accessed if
 # the same ports are published when the container is run.
 EXPOSE $SERVER_PORT
 EXPOSE $WEBAPP_PORT
