@@ -37,11 +37,14 @@ RUN apk --no-cache add apache-ant bash git openjdk17
 # Establish environment variables
 RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
 RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
 ENV JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
+ENV NUTCH_JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
 ENV NUTCH_HOME='/root/nutch_source/runtime/local'
 
-# Checkout and build the Nutch master branch (1.x)
-RUN git clone https://github.com/apache/nutch.git nutch_source && \
+# Clone from our fork.
+RUN git clone --single-branch --branch ticket/82-es8-update https://github.com/nciocpl/nutch.git nutch_source && \
      cd nutch_source && \
      ant runtime && \
      rm -rf build/ && \
