@@ -45,12 +45,12 @@ RUN apk update
 RUN apk --no-cache add apache-ant bash git openjdk11 supervisor
 
 # Establish environment variables
-RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
-RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
-RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.bashrc
-RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-17-openjdk' >> $HOME/.ashrc
-ENV JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
-ENV NUTCH_JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
+RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.bashrc
+RUN echo 'export JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.ashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.bashrc
+RUN echo 'export NUTCH_JAVA_HOME=/usr/lib/jvm/java-11-openjdk' >> $HOME/.ashrc
+ENV JAVA_HOME='/usr/lib/jvm/java-11-openjdk'
+ENV NUTCH_JAVA_HOME='/usr/lib/jvm/java-11-openjdk'
 ENV NUTCH_HOME='/root/nutch_source/runtime/local'
 
 # Clone from our fork.
