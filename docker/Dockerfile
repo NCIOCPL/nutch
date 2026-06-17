@@ -54,7 +54,7 @@ ENV NUTCH_JAVA_HOME='/usr/lib/jvm/java-17-openjdk'
 ENV NUTCH_HOME='/root/nutch_source/runtime/local'
 
 # Clone from our fork.
-RUN git clone --single-branch --branch from-v1.22 https://github.com/nciocpl/nutch.git nutch_source && \
+RUN git clone --single-branch --branch v1.22-with-es8 https://github.com/nciocpl/nutch.git nutch_source && \
      cd nutch_source && \
      ant runtime && \
      rm -rf build/ && \
