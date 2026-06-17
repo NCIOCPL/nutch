@@ -62,6 +62,15 @@
 			<!-- exclusions of dependencies provided by Nutch core -->
 			<exclude org="commons-logging" name="commons-logging" />
 		</dependency>
+		<dependency org="io.netty" name="netty-buffer" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-codec" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-common" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-handler" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-resolver" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-transport" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.135.Final" conf="*->default" force="true"/>
+		<dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.135.Final" conf="*->default" force="true"/>
 	</dependencies>
 
 </ivy-module>

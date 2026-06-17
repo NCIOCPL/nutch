@@ -136,6 +136,38 @@
 		<!--TODO refactor these to indexer-elastic-rest plugin somehow, currently doesn't resolve correctly-->
 		<dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="4.4.16" />
 		<dependency org="org.apache.httpcomponents" name="httpcore" rev="4.4.16" />
+		<!-- Force Netty modules to a single patched version. -->
+		<dependency org="io.netty" name="netty-all" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-buffer" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-dns" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-haproxy" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-http" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-http2" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-memcache" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-mqtt" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-redis" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-smtp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-socks" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-stomp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-xml" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-common" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler-proxy" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler-ssl-ocsp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns-classes-macos" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns-native-macos" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-classes-kqueue" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-kqueue" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-rxtx" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-sctp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-udt" rev="4.1.135.Final" conf="*->default" force="true" />
 
 		<dependency org="de.vandermeer" name="asciitable" rev="0.3.2" />
 		<dependency org="org.littleshoot" name="littleproxy" rev="1.1.2" conf="test->default"/>

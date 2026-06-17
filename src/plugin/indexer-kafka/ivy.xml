@@ -39,6 +39,15 @@
   <dependencies>
       <dependency org="org.apache.kafka" name="kafka_2.12" rev="3.7.0"/>
       <dependency org="org.apache.kafka" name="connect-json" rev="3.7.0"/>
+      <dependency org="io.netty" name="netty-buffer" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-codec" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-common" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-handler" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-resolver" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.135.Final" force="true"/>
+      <dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.135.Final" force="true"/>
   </dependencies>
 
 </ivy-module>

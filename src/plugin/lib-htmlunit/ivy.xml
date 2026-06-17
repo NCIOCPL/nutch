@@ -40,6 +40,20 @@
     <!-- begin selenium dependencies -->
     <dependency org="org.seleniumhq.selenium" name="selenium-java" rev="4.7.2" />
     <dependency org="org.seleniumhq.selenium" name="htmlunit-driver" rev="4.7.0" />
+    <dependency org="io.netty" name="netty-buffer" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-codec" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-codec-http" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-codec-socks" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-common" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-handler" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-handler-proxy" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-resolver" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport-classes-kqueue" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport-native-kqueue" rev="4.1.135.Final" force="true"/>
+    <dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.135.Final" force="true"/>
     <!-- end selenium dependencies -->
   </dependencies>
   
