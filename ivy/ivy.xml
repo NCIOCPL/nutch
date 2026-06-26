@@ -75,6 +75,7 @@
 		<!-- End of Hadoop Dependencies -->
 
 		<!-- Security overrides for Hadoop-managed dependencies. -->
+		<dependency org="org.apache.commons" name="commons-configuration2" rev="2.15.0" conf="*->default" force="true" />
 		<dependency org="org.apache.zookeeper" name="zookeeper" rev="3.8.6" conf="*->default" force="true" />
 		<dependency org="org.apache.zookeeper" name="zookeeper-jute" rev="3.8.6" conf="*->default" force="true" />
 		<dependency org="com.nimbusds" name="nimbus-jose-jwt" rev="9.37.4" conf="*->default" force="true" />
