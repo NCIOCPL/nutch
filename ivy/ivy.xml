@@ -38,9 +38,9 @@
 	</publications>
 
 	<dependencies>
-		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.25.2" conf="*->master" />
-		<dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.25.2" conf="*->master" />
-		<dependency org="org.apache.logging.log4j" name="log4j-slf4j2-impl" rev="2.25.2" conf="*->master" />
+		<dependency org="org.apache.logging.log4j" name="log4j-api" rev="2.25.4" conf="*->master" />
+		<dependency org="org.apache.logging.log4j" name="log4j-core" rev="2.25.4" conf="*->master" />
+		<dependency org="org.apache.logging.log4j" name="log4j-slf4j2-impl" rev="2.25.4" conf="*->master" />
 		<dependency org="org.slf4j" name="slf4j-api" rev="2.0.17" conf="*->master" />
 
 		<dependency org="org.apache.commons" name="commons-lang3" rev="3.20.0" conf="*->default" />
@@ -74,7 +74,14 @@
 		</dependency>
 		<!-- End of Hadoop Dependencies -->
 
-		<dependency org="org.apache.tika" name="tika-core" rev="3.2.3" conf="*->default"/>
+		<!-- Security overrides for Hadoop-managed dependencies. -->
+		<dependency org="org.apache.commons" name="commons-configuration2" rev="2.15.0" conf="*->default" force="true" />
+		<dependency org="org.apache.zookeeper" name="zookeeper" rev="3.8.6" conf="*->default" force="true" />
+		<dependency org="org.apache.zookeeper" name="zookeeper-jute" rev="3.8.6" conf="*->default" force="true" />
+		<dependency org="com.nimbusds" name="nimbus-jose-jwt" rev="9.37.4" conf="*->default" force="true" />
+		<dependency org="org.bouncycastle" name="bcprov-jdk18on" rev="1.84" conf="*->default" force="true" />
+
+		<dependency org="org.apache.tika" name="tika-core" rev="3.3.1" conf="*->default"/>
 
 		<dependency org="xml-apis" name="xml-apis" rev="1.4.01" /><!-- force this version as it is required by Tika -->
 		<dependency org="xerces" name="xercesImpl" rev="2.12.2" />
@@ -90,15 +97,16 @@
 			<exclude module="hadoop-client" />
 		</dependency>
 
-		<dependency org="org.apache.cxf" name="cxf-rt-frontend-jaxws" rev="3.6.9" conf="*->default" />
-		<dependency org="org.apache.cxf" name="cxf-rt-frontend-jaxrs" rev="3.6.9" conf="*->default" />
-		<dependency org="org.apache.cxf" name="cxf-rt-transports-http" rev="3.6.9" conf="*->default" />
-		<dependency org="org.apache.cxf" name="cxf-rt-transports-http-jetty" rev="3.6.9" conf="*->default" />
-		<dependency org="org.apache.cxf" name="cxf-rt-rs-client" rev="3.6.9" conf="test->default" />
-		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.5" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.5" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.5" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.18.5" conf="*->default" />
+		<dependency org="org.apache.cxf" name="cxf-rt-frontend-jaxws" rev="3.6.11" conf="*->default" />
+		<dependency org="org.apache.cxf" name="cxf-rt-frontend-jaxrs" rev="3.6.11" conf="*->default" />
+		<dependency org="org.apache.cxf" name="cxf-rt-transports-http" rev="3.6.11" conf="*->default" />
+		<dependency org="org.apache.cxf" name="cxf-rt-transports-http-jetty" rev="3.6.11" conf="*->default" />
+		<dependency org="org.apache.cxf" name="cxf-rt-rs-client" rev="3.6.11" conf="test->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.6" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.6" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.6" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.6" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.18.6" conf="*->default" />
 
 		<!-- WARC artifacts needed -->
 		<dependency org="org.netpreserve.commons" name="webarchive-commons" rev="3.0.2" conf="*->default">
@@ -126,6 +134,10 @@
         <dependency org="org.mockito" name="mockito-core" rev="5.18.0" conf="test->default"/>
         <dependency org="org.mockito" name="mockito-junit-jupiter" rev="5.18.0" conf="test->default"/>
 
+        <!-- Testcontainers for indexer plugin integration tests -->
+        <dependency org="org.testcontainers" name="testcontainers" rev="2.0.3" conf="test->default"/>
+        <dependency org="org.testcontainers" name="junit-jupiter" rev="1.21.4" conf="test->default"/>
+
 		<!-- Jetty used to serve test pages for unit tests, but is also provided as dependency of Hadoop -->
 		<dependency org="org.eclipse.jetty" name="jetty-server" rev="12.1.5" conf="test->default">
 			<exclude org="ch.qos.reload4j" module="*" />
@@ -136,6 +148,38 @@
 		<!--TODO refactor these to indexer-elastic-rest plugin somehow, currently doesn't resolve correctly-->
 		<dependency org="org.apache.httpcomponents" name="httpcore-nio" rev="4.4.16" />
 		<dependency org="org.apache.httpcomponents" name="httpcore" rev="4.4.16" />
+		<!-- Force Netty modules to a single patched version. -->
+		<dependency org="io.netty" name="netty-all" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-buffer" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-dns" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-haproxy" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-http" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-http2" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-memcache" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-mqtt" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-redis" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-smtp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-socks" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-stomp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-codec-xml" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-common" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler-proxy" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-handler-ssl-ocsp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns-classes-macos" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-resolver-dns-native-macos" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-classes-epoll" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-classes-kqueue" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-epoll" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-kqueue" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-native-unix-common" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-rxtx" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-sctp" rev="4.1.135.Final" conf="*->default" force="true" />
+		<dependency org="io.netty" name="netty-transport-udt" rev="4.1.135.Final" conf="*->default" force="true" />
 
 		<dependency org="de.vandermeer" name="asciitable" rev="0.3.2" />
 		<dependency org="org.littleshoot" name="littleproxy" rev="1.1.2" conf="test->default"/>
