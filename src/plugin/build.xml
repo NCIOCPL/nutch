@@ -172,6 +172,13 @@
     <ant dir="${plugin}" target="test"/>
   </target>
 
+  <!-- ======================================================  -->
+  <!-- Indexer plugin integration tests (Testcontainers)       -->
+  <!-- ======================================================  -->
+  <target name="test-indexer-integration">
+    <ant dir="indexer-elastic" target="test-indexer-integration"/>
+  </target>
+
   <!-- ====================================================== -->
   <!-- Clean all of the plugins.                              -->
   <!-- ====================================================== -->
