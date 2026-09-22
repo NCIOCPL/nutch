@@ -36,13 +36,17 @@
   </publications>
 
   <dependencies>
-    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-high-level-client" rev="7.17.28">
-      <!-- Nutch core supplies Log4j 2.25.5 -->
+
+    <dependency org="org.testcontainers" name="testcontainers-elasticsearch" rev="2.0.3" conf="test->default"/>
+    <dependency org="co.elastic.clients" name="elasticsearch-java" rev="8.16.7">
+      <!-- 8.16.7 has no matching low-level rest-client artifact. -->
+      <exclude org="org.elasticsearch.client" module="elasticsearch-rest-client"/>
       <exclude org="org.apache.logging.log4j" module="*"/>
-      <!-- Substitute at.yawk.lz4 to avoid CVE-2025-12183, per GitHub advisor recommendation.
-            https://github.com/advisories/GHSA-vqf4-7m7x-wgfc -->
-      <exclude org="org.lz4" module="lz4-java"/>
     </dependency>
+    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-client" rev="8.16.6">
+      <exclude org="org.apache.logging.log4j" module="*"/>
+    </dependency>
+
     <!-- Add the at.yawk.lz4 dependency to replace the excluded lz4-java -->
     <dependency org="at.yawk.lz4" name="lz4-java" rev="1.11.1"/>
 
@@ -57,20 +61,6 @@
     <!-- Jackson YAML 2.18.x uses SnakeYAML 2.3. -->
     <dependency org="org.yaml" name="snakeyaml" rev="2.3" force="true"/>
 
-    <dependency org="org.apache.lucene" name="lucene-analyzers-common" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-backward-codecs" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-core" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-grouping" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-highlighter" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-join" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-memory" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-misc" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-queries" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-queryparser" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-sandbox" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-spatial-extras" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-spatial3d" rev="8.11.3"/>
-    <dependency org="org.apache.lucene" name="lucene-suggest" rev="8.11.3"/>
   </dependencies>
 
 </ivy-module>
