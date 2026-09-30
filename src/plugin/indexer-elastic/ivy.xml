@@ -50,13 +50,13 @@
     <!-- Add the at.yawk.lz4 dependency to replace the excluded lz4-java -->
     <dependency org="at.yawk.lz4" name="lz4-java" rev="1.11.1"/>
 
-    <!-- Force com.fasterxml.jackson.* dependencies to use version 2.18.9,  -->
-    <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.9" force="true"/>
-    <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.9" force="true"/>
-    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.9" force="true"/>
-    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.9" force="true"/>
-    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-smile" rev="2.18.9" force="true"/>
-    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-yaml" rev="2.18.9" force="true"/>
+    <!-- Force com.fasterxml.jackson.* dependencies to use version 2.18.10,  -->
+    <dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.11" force="true"/>
+    <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.11" force="true"/>
+    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.11" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.11" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-smile" rev="2.18.11" force="true"/>
+    <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-yaml" rev="2.18.11" force="true"/>
 
     <!-- Jackson YAML 2.18.x uses SnakeYAML 2.3. -->
     <dependency org="org.yaml" name="snakeyaml" rev="2.3" force="true"/>
