@@ -20,15 +20,18 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import co.elastic.clients.elasticsearch.core.BulkResponse;
 import org.apache.nutch.indexer.IndexWriterParams;
 import org.apache.nutch.indexer.NutchDocument;
+import org.elasticsearch.client.RestClient;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TestElasticIndexWriter {
@@ -116,6 +119,21 @@ public class TestElasticIndexWriter {
     writer.close();
   }
 
+  @Test
+  void testOpenCleansUpResourcesWhenBulkIngesterCreationFails() {
+    TrackingElasticIndexWriter writer = new TrackingElasticIndexWriter();
+    IndexWriterParams invalidParams = new IndexWriterParams(Map.of(
+        ElasticConstants.HOSTS, "localhost",
+        ElasticConstants.PORT, "9200",
+        ElasticConstants.MAX_BULK_DOCS, "-2"));
+
+    assertThrows(IllegalArgumentException.class,
+        () -> writer.open(invalidParams));
+
+    assertFalse(writer.restClient.isRunning());
+    assertTrue(writer.retryScheduler.isShutdown());
+  }
+
   private static BulkResponse successfulBulkResponse() {
     return BulkResponse.of(builder -> builder
         .errors(false)
@@ -127,5 +145,24 @@ public class TestElasticIndexWriter {
     return new IndexWriterParams(Map.of(
         ElasticConstants.HOSTS, "localhost",
         ElasticConstants.PORT, "9200"));
+  }
+
+  private static final class TrackingElasticIndexWriter
+      extends ElasticIndexWriter {
+    private RestClient restClient;
+    private ScheduledExecutorService retryScheduler;
+
+    @Override
+    protected RestClient makeRestClient(IndexWriterParams parameters)
+        throws java.io.IOException {
+      restClient = super.makeRestClient(parameters);
+      return restClient;
+    }
+
+    @Override
+    ScheduledExecutorService createRetryScheduler() {
+      retryScheduler = super.createRetryScheduler();
+      return retryScheduler;
+    }
   }
 }

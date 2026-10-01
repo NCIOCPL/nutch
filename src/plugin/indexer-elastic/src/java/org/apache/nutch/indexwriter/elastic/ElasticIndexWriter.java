@@ -144,20 +144,52 @@ public class ElasticIndexWriter implements IndexWriter {
         ElasticConstants.EXPONENTIAL_BACKOFF_RETRIES,
         DEFAULT_EXP_BACKOFF_RETRIES);
 
-    client = makeClient(parameters);
+    ElasticsearchClient newClient = null;
     BulkLifecycle newLifecycle = new BulkLifecycle();
-    newLifecycle.retryScheduler = Executors.newScheduledThreadPool(2,
-        new ElasticBulkThreadFactory());
+    try {
+      newClient = makeClient(parameters);
+      ElasticsearchClient bulkClient = newClient;
+      newLifecycle.retryScheduler = createRetryScheduler();
 
-    LOG.debug("Creating BulkIngester with maxBulkDocs={}, maxBulkLength={}",
-        maxBulkDocs, maxBulkLength);
-    newLifecycle.bulkIngester = BulkIngester.of(b -> b.client(client)
-        .maxOperations(maxBulkDocs)
-        .maxSize(maxBulkLength)
-        .maxConcurrentRequests(MAX_CONCURRENT_BULK_REQUESTS)
-        .scheduler(newLifecycle.retryScheduler)
-        .listener(bulkListener(newLifecycle)));
-    bulkLifecycle = newLifecycle;
+      LOG.debug("Creating BulkIngester with maxBulkDocs={}, maxBulkLength={}",
+          maxBulkDocs, maxBulkLength);
+      newLifecycle.bulkIngester = BulkIngester.of(b -> b.client(bulkClient)
+          .maxOperations(maxBulkDocs)
+          .maxSize(maxBulkLength)
+          .maxConcurrentRequests(MAX_CONCURRENT_BULK_REQUESTS)
+          .scheduler(newLifecycle.retryScheduler)
+          .listener(bulkListener(newLifecycle)));
+
+      client = newClient;
+      transport = newClient._transport();
+      bulkLifecycle = newLifecycle;
+    } catch (IOException | RuntimeException | Error e) {
+      cleanupFailedOpen(newClient, newLifecycle, e);
+      throw e;
+    }
+  }
+
+  ScheduledExecutorService createRetryScheduler() {
+    return Executors.newScheduledThreadPool(2,
+        new ElasticBulkThreadFactory());
+  }
+
+  private void cleanupFailedOpen(ElasticsearchClient newClient,
+      BulkLifecycle newLifecycle, Throwable failure) {
+    if (newLifecycle.retryScheduler != null) {
+      try {
+        newLifecycle.retryScheduler.shutdownNow();
+      } catch (RuntimeException | Error e) {
+        failure.addSuppressed(e);
+      }
+    }
+    if (newClient != null) {
+      try {
+        newClient.close();
+      } catch (IOException | RuntimeException | Error e) {
+        failure.addSuppressed(e);
+      }
+    }
   }
 
   /**
@@ -170,8 +202,23 @@ public class ElasticIndexWriter implements IndexWriter {
   protected ElasticsearchClient makeClient(IndexWriterParams parameters)
       throws IOException {
     RestClient restClient = makeRestClient(parameters);
-    transport = new RestClientTransport(restClient, new JacksonJsonpMapper());
-    return new ElasticsearchClient(transport);
+    ElasticsearchTransport newTransport = null;
+    try {
+      newTransport = new RestClientTransport(restClient,
+          new JacksonJsonpMapper());
+      return new ElasticsearchClient(newTransport);
+    } catch (RuntimeException | Error e) {
+      try {
+        if (newTransport == null) {
+          restClient.close();
+        } else {
+          newTransport.close();
+        }
+      } catch (IOException | RuntimeException | Error closeException) {
+        e.addSuppressed(closeException);
+      }
+      throw e;
+    }
   }
 
   /**
