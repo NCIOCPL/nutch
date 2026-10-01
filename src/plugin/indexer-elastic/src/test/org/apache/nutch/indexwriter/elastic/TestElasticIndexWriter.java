@@ -20,8 +20,10 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import co.elastic.clients.elasticsearch.core.BulkResponse;
+import org.apache.nutch.indexer.IndexWriterParams;
 import org.apache.nutch.indexer.NutchDocument;
 import org.junit.jupiter.api.Test;
 
@@ -80,15 +82,33 @@ public class TestElasticIndexWriter {
   void testBulkListenerTracksActiveCallback() {
     ElasticIndexWriter writer = new ElasticIndexWriter();
     var listener = writer.bulkListener();
-    BulkResponse response = BulkResponse.of(builder -> builder
-        .errors(false)
-        .items(List.of())
-        .took(0));
 
     listener.beforeBulk(1L, null, List.of());
     assertEquals(1, writer.activeBulkCallbacks());
 
-    listener.afterBulk(1L, null, List.of(), response);
+    listener.afterBulk(1L, null, List.of(), successfulBulkResponse());
     assertEquals(0, writer.activeBulkCallbacks());
+  }
+
+  @Test
+  void testBulkDrainReportsTimeout() throws Exception {
+    ElasticIndexWriter writer = new ElasticIndexWriter();
+    writer.open(new IndexWriterParams(Map.of(
+        ElasticConstants.HOSTS, "localhost",
+        ElasticConstants.PORT, "9200")));
+    var listener = writer.bulkListener();
+
+    listener.beforeBulk(1L, null, List.of());
+    assertFalse(writer.awaitBulkCompletion(0, TimeUnit.MILLISECONDS));
+
+    listener.afterBulk(1L, null, List.of(), successfulBulkResponse());
+    writer.close();
+  }
+
+  private static BulkResponse successfulBulkResponse() {
+    return BulkResponse.of(builder -> builder
+        .errors(false)
+        .items(List.of())
+        .took(0));
   }
 }

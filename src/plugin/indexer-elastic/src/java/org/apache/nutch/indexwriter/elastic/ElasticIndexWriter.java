@@ -338,8 +338,9 @@ public class ElasticIndexWriter implements IndexWriter {
     try {
       if (bulkIngester != null) {
         bulkIngester.flush();
-        awaitBulkCompletion(bulkCloseTimeout, TimeUnit.SECONDS);
-        bulkIngester.close();
+        if (awaitBulkCompletion(bulkCloseTimeout, TimeUnit.SECONDS)) {
+          bulkIngester.close();
+        }
       }
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
@@ -442,7 +443,7 @@ public class ElasticIndexWriter implements IndexWriter {
         context.description, delayMillis, reason);
   }
 
-  private void awaitBulkCompletion(long timeout, TimeUnit unit)
+  boolean awaitBulkCompletion(long timeout, TimeUnit unit)
       throws InterruptedException {
     long timeoutNanos = unit.toNanos(timeout);
     long deadline = System.nanoTime() + timeoutNanos;
@@ -452,10 +453,12 @@ public class ElasticIndexWriter implements IndexWriter {
 
     if (hasPendingBulkWork()) {
       LOG.warn(
-          "Timed out waiting for BulkIngester to complete. pendingOperations={}, pendingRequests={}, scheduledRetries={}, activeBulkCallbacks={}",
+          "Timed out waiting for BulkIngester to complete; forcing shutdown. pendingOperations={}, pendingRequests={}, scheduledRetries={}, activeBulkCallbacks={}",
           bulkIngester.pendingOperations(), bulkIngester.pendingRequests(),
           scheduledRetries.get(), activeBulkCallbacks.get());
+      return false;
     }
+    return true;
   }
 
   private boolean hasPendingBulkWork() {
