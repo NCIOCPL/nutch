@@ -101,6 +101,7 @@ public class ElasticIndexWriter implements IndexWriter {
   private BulkIngester<RetryContext> bulkIngester;
   private ScheduledExecutorService retryScheduler;
   private final AtomicInteger scheduledRetries = new AtomicInteger();
+  private final AtomicInteger activeBulkCallbacks = new AtomicInteger();
   private volatile boolean closing;
 
   private long bulkCloseTimeout;
@@ -255,43 +256,54 @@ public class ElasticIndexWriter implements IndexWriter {
       @Override
       public void beforeBulk(long executionId, BulkRequest request,
           List<RetryContext> contexts) {
+        activeBulkCallbacks.incrementAndGet();
       }
 
       @Override
       public void afterBulk(long executionId, BulkRequest request,
           List<RetryContext> contexts, Throwable failure) {
-        LOG.error("Elasticsearch indexing failed:", failure);
-        for (RetryContext context : contexts) {
-          scheduleRetry(context, "bulk request failure: " + failure.getMessage());
+        try {
+          LOG.error("Elasticsearch indexing failed:", failure);
+          for (RetryContext context : contexts) {
+            scheduleRetry(context,
+                "bulk request failure: " + failure.getMessage());
+          }
+        } finally {
+          activeBulkCallbacks.decrementAndGet();
         }
       }
 
       @Override
       public void afterBulk(long executionId, BulkRequest request,
           List<RetryContext> contexts, BulkResponse response) {
-        if (!response.errors()) {
-          return;
-        }
-        int loggedFailures = 0;
-        List<BulkResponseItem> items = response.items();
-        for (int i = 0; i < items.size() && i < contexts.size(); i++) {
-          BulkResponseItem item = items.get(i);
-          if (item.error() == null) {
-            continue;
+        try {
+          if (!response.errors()) {
+            return;
           }
-          RetryContext context = contexts.get(i);
-          String reason = item.error().reason();
-          if (isRetryableStatus(item.status())) {
-            scheduleRetry(context, "status " + item.status() + ": " + reason);
-          } else {
-            loggedFailures++;
-            LOG.warn("Permanent Elasticsearch bulk failure for {}: status={}, type={}, reason={}",
-                context.description, item.status(), item.error().type(), reason);
+          int loggedFailures = 0;
+          List<BulkResponseItem> items = response.items();
+          for (int i = 0; i < items.size() && i < contexts.size(); i++) {
+            BulkResponseItem item = items.get(i);
+            if (item.error() == null) {
+              continue;
+            }
+            RetryContext context = contexts.get(i);
+            String reason = item.error().reason();
+            if (isRetryableStatus(item.status())) {
+              scheduleRetry(context,
+                  "status " + item.status() + ": " + reason);
+            } else {
+              loggedFailures++;
+              LOG.warn("Permanent Elasticsearch bulk failure for {}: status={}, type={}, reason={}",
+                  context.description, item.status(), item.error().type(), reason);
+            }
           }
-        }
-        if (loggedFailures > 0) {
-          LOG.warn("Permanent failures occurred during bulk request: {}",
-              loggedFailures);
+          if (loggedFailures > 0) {
+            LOG.warn("Permanent failures occurred during bulk request: {}",
+                loggedFailures);
+          }
+        } finally {
+          activeBulkCallbacks.decrementAndGet();
         }
       }
     };
@@ -440,9 +452,9 @@ public class ElasticIndexWriter implements IndexWriter {
 
     if (hasPendingBulkWork()) {
       LOG.warn(
-          "Timed out waiting for BulkIngester to complete. pendingOperations={}, pendingRequests={}, scheduledRetries={}",
+          "Timed out waiting for BulkIngester to complete. pendingOperations={}, pendingRequests={}, scheduledRetries={}, activeBulkCallbacks={}",
           bulkIngester.pendingOperations(), bulkIngester.pendingRequests(),
-          scheduledRetries.get());
+          scheduledRetries.get(), activeBulkCallbacks.get());
     }
   }
 
@@ -450,7 +462,12 @@ public class ElasticIndexWriter implements IndexWriter {
     return bulkIngester != null
         && (bulkIngester.pendingOperations() > 0
         || bulkIngester.pendingRequests() > 0
-        || scheduledRetries.get() > 0);
+        || scheduledRetries.get() > 0
+        || activeBulkCallbacks.get() > 0);
+  }
+
+  int activeBulkCallbacks() {
+    return activeBulkCallbacks.get();
   }
 
   private void shutdownRetryScheduler() {

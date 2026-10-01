@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import co.elastic.clients.elasticsearch.core.BulkResponse;
 import org.apache.nutch.indexer.NutchDocument;
 import org.junit.jupiter.api.Test;
 
@@ -73,5 +74,21 @@ public class TestElasticIndexWriter {
         ElasticIndexWriter.computeExponentialBackoffMillis(100, 2));
     assertEquals(0L,
         ElasticIndexWriter.computeExponentialBackoffMillis(0, 2));
+  }
+
+  @Test
+  void testBulkListenerTracksActiveCallback() {
+    ElasticIndexWriter writer = new ElasticIndexWriter();
+    var listener = writer.bulkListener();
+    BulkResponse response = BulkResponse.of(builder -> builder
+        .errors(false)
+        .items(List.of())
+        .took(0));
+
+    listener.beforeBulk(1L, null, List.of());
+    assertEquals(1, writer.activeBulkCallbacks());
+
+    listener.afterBulk(1L, null, List.of(), response);
+    assertEquals(0, writer.activeBulkCallbacks());
   }
 }
