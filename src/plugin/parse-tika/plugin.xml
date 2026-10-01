@@ -52,9 +52,9 @@
       <library name="istack-commons-runtime-4.1.2.jar"/>
       <library name="jackcess-4.0.11.jar"/>
       <library name="jackcess-encrypt-4.0.3.jar"/>
-      <library name="jackson-annotations-2.22.1.jar"/>
-      <library name="jackson-core-2.22.1.jar"/>
-      <library name="jackson-databind-2.22.1.jar"/>
+      <library name="jackson-annotations-2.22.3.jar"/>
+      <library name="jackson-core-2.22.3.jar"/>
+      <library name="jackson-databind-2.22.3.jar"/>
       <library name="jai-imageio-core-1.4.0.jar"/>
       <library name="jakarta.activation-api-2.1.4.jar"/>
       <library name="jakarta.xml.bind-api-4.0.5.jar"/>
