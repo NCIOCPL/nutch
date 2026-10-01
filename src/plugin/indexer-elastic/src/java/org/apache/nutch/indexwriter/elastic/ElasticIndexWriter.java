@@ -98,11 +98,7 @@ public class ElasticIndexWriter implements IndexWriter {
   private String defaultIndex;
   private ElasticsearchClient client;
   private ElasticsearchTransport transport;
-  private BulkIngester<RetryContext> bulkIngester;
-  private ScheduledExecutorService retryScheduler;
-  private final AtomicInteger scheduledRetries = new AtomicInteger();
-  private final AtomicInteger activeBulkCallbacks = new AtomicInteger();
-  private volatile boolean closing;
+  private volatile BulkLifecycle bulkLifecycle = new BulkLifecycle();
 
   private long bulkCloseTimeout;
 
@@ -149,17 +145,19 @@ public class ElasticIndexWriter implements IndexWriter {
         DEFAULT_EXP_BACKOFF_RETRIES);
 
     client = makeClient(parameters);
-    retryScheduler = Executors.newScheduledThreadPool(2,
+    BulkLifecycle newLifecycle = new BulkLifecycle();
+    newLifecycle.retryScheduler = Executors.newScheduledThreadPool(2,
         new ElasticBulkThreadFactory());
 
     LOG.debug("Creating BulkIngester with maxBulkDocs={}, maxBulkLength={}",
         maxBulkDocs, maxBulkLength);
-    bulkIngester = BulkIngester.of(b -> b.client(client)
+    newLifecycle.bulkIngester = BulkIngester.of(b -> b.client(client)
         .maxOperations(maxBulkDocs)
         .maxSize(maxBulkLength)
         .maxConcurrentRequests(MAX_CONCURRENT_BULK_REQUESTS)
-        .scheduler(retryScheduler)
-        .listener(bulkListener()));
+        .scheduler(newLifecycle.retryScheduler)
+        .listener(bulkListener(newLifecycle)));
+    bulkLifecycle = newLifecycle;
   }
 
   /**
@@ -252,11 +250,15 @@ public class ElasticIndexWriter implements IndexWriter {
    * @return {@link BulkListener}
    */
   protected BulkListener<RetryContext> bulkListener() {
+    return bulkListener(bulkLifecycle);
+  }
+
+  private BulkListener<RetryContext> bulkListener(BulkLifecycle lifecycle) {
     return new BulkListener<RetryContext>() {
       @Override
       public void beforeBulk(long executionId, BulkRequest request,
           List<RetryContext> contexts) {
-        activeBulkCallbacks.incrementAndGet();
+        lifecycle.activeBulkCallbacks.incrementAndGet();
       }
 
       @Override
@@ -265,11 +267,11 @@ public class ElasticIndexWriter implements IndexWriter {
         try {
           LOG.error("Elasticsearch indexing failed:", failure);
           for (RetryContext context : contexts) {
-            scheduleRetry(context,
+            scheduleRetry(lifecycle, context,
                 "bulk request failure: " + failure.getMessage());
           }
         } finally {
-          activeBulkCallbacks.decrementAndGet();
+          lifecycle.activeBulkCallbacks.decrementAndGet();
         }
       }
 
@@ -290,7 +292,7 @@ public class ElasticIndexWriter implements IndexWriter {
             RetryContext context = contexts.get(i);
             String reason = item.error().reason();
             if (isRetryableStatus(item.status())) {
-              scheduleRetry(context,
+              scheduleRetry(lifecycle, context,
                   "status " + item.status() + ": " + reason);
             } else {
               loggedFailures++;
@@ -303,7 +305,7 @@ public class ElasticIndexWriter implements IndexWriter {
                 loggedFailures);
           }
         } finally {
-          activeBulkCallbacks.decrementAndGet();
+          lifecycle.activeBulkCallbacks.decrementAndGet();
         }
       }
     };
@@ -329,17 +331,19 @@ public class ElasticIndexWriter implements IndexWriter {
 
   @Override
   public void commit() throws IOException {
-    bulkIngester.flush();
+    bulkLifecycle.bulkIngester.flush();
   }
 
   @Override
   public void close() throws IOException {
     IOException closeException = null;
+    BulkLifecycle lifecycle = bulkLifecycle;
     try {
-      if (bulkIngester != null) {
-        bulkIngester.flush();
-        if (awaitBulkCompletion(bulkCloseTimeout, TimeUnit.SECONDS)) {
-          bulkIngester.close();
+      if (lifecycle.bulkIngester != null) {
+        lifecycle.bulkIngester.flush();
+        if (awaitBulkCompletion(lifecycle, bulkCloseTimeout,
+            TimeUnit.SECONDS)) {
+          lifecycle.bulkIngester.close();
         }
       }
     } catch (InterruptedException e) {
@@ -349,8 +353,8 @@ public class ElasticIndexWriter implements IndexWriter {
     } catch (RuntimeException e) {
       closeException = new IOException("Error closing BulkIngester", e);
     } finally {
-      closing = true;
-      shutdownRetryScheduler();
+      lifecycle.closing = true;
+      shutdownRetryScheduler(lifecycle);
     }
 
     try {
@@ -411,11 +415,13 @@ public class ElasticIndexWriter implements IndexWriter {
   }
 
   private void addOperation(BulkOperation operation, String description) {
-    bulkIngester.add(operation, new RetryContext(operation, description, 0));
+    bulkLifecycle.bulkIngester.add(operation,
+        new RetryContext(operation, description, 0));
   }
 
-  private void scheduleRetry(RetryContext context, String reason) {
-    if (closing) {
+  private void scheduleRetry(BulkLifecycle lifecycle, RetryContext context,
+      String reason) {
+    if (lifecycle.closing) {
       LOG.warn("Skipping Elasticsearch retry for {} because writer is closing: {}",
           context.description, reason);
       return;
@@ -429,61 +435,80 @@ public class ElasticIndexWriter implements IndexWriter {
     long delayMillis = computeExponentialBackoffMillis(expBackoffMillis,
         context.attempt);
     RetryContext retryContext = context.nextAttempt();
-    scheduledRetries.incrementAndGet();
-    retryScheduler.schedule(() -> {
-      try {
-        bulkIngester.add(retryContext.operation, retryContext);
-      } catch (RuntimeException e) {
-        LOG.error("Elasticsearch retry failed for {}:", retryContext.description, e);
-      } finally {
-        scheduledRetries.decrementAndGet();
-      }
-    }, delayMillis, TimeUnit.MILLISECONDS);
+    lifecycle.scheduledRetries.incrementAndGet();
+    try {
+      lifecycle.retryScheduler.schedule(() -> {
+        try {
+          lifecycle.bulkIngester.add(retryContext.operation, retryContext);
+        } catch (RuntimeException e) {
+          LOG.error("Elasticsearch retry failed for {}:",
+              retryContext.description, e);
+        } finally {
+          lifecycle.scheduledRetries.decrementAndGet();
+        }
+      }, delayMillis, TimeUnit.MILLISECONDS);
+    } catch (RuntimeException e) {
+      lifecycle.scheduledRetries.decrementAndGet();
+      LOG.error("Unable to schedule Elasticsearch retry for {}:",
+          retryContext.description, e);
+      return;
+    }
     LOG.debug("Scheduled Elasticsearch retry for {} in {} ms after {}",
         context.description, delayMillis, reason);
   }
 
   boolean awaitBulkCompletion(long timeout, TimeUnit unit)
       throws InterruptedException {
+    return awaitBulkCompletion(bulkLifecycle, timeout, unit);
+  }
+
+  private boolean awaitBulkCompletion(BulkLifecycle lifecycle, long timeout,
+      TimeUnit unit) throws InterruptedException {
     long timeoutNanos = unit.toNanos(timeout);
     long deadline = System.nanoTime() + timeoutNanos;
-    while (hasPendingBulkWork() && System.nanoTime() < deadline) {
+    while (hasPendingBulkWork(lifecycle) && System.nanoTime() < deadline) {
       TimeUnit.MILLISECONDS.sleep(DRAIN_POLL_MILLIS);
     }
 
-    if (hasPendingBulkWork()) {
+    if (hasPendingBulkWork(lifecycle)) {
       LOG.warn(
           "Timed out waiting for BulkIngester to complete; forcing shutdown. pendingOperations={}, pendingRequests={}, scheduledRetries={}, activeBulkCallbacks={}",
-          bulkIngester.pendingOperations(), bulkIngester.pendingRequests(),
-          scheduledRetries.get(), activeBulkCallbacks.get());
+          lifecycle.bulkIngester.pendingOperations(),
+          lifecycle.bulkIngester.pendingRequests(),
+          lifecycle.scheduledRetries.get(),
+          lifecycle.activeBulkCallbacks.get());
       return false;
     }
     return true;
   }
 
-  private boolean hasPendingBulkWork() {
-    return bulkIngester != null
-        && (bulkIngester.pendingOperations() > 0
-        || bulkIngester.pendingRequests() > 0
-        || scheduledRetries.get() > 0
-        || activeBulkCallbacks.get() > 0);
+  private boolean hasPendingBulkWork(BulkLifecycle lifecycle) {
+    return lifecycle.bulkIngester != null
+        && (lifecycle.bulkIngester.pendingOperations() > 0
+        || lifecycle.bulkIngester.pendingRequests() > 0
+        || lifecycle.scheduledRetries.get() > 0
+        || lifecycle.activeBulkCallbacks.get() > 0);
   }
 
   int activeBulkCallbacks() {
-    return activeBulkCallbacks.get();
+    return bulkLifecycle.activeBulkCallbacks.get();
   }
 
-  private void shutdownRetryScheduler() {
-    if (retryScheduler == null) {
+  boolean isClosing() {
+    return bulkLifecycle.closing;
+  }
+
+  private void shutdownRetryScheduler(BulkLifecycle lifecycle) {
+    if (lifecycle.retryScheduler == null) {
       return;
     }
-    retryScheduler.shutdown();
+    lifecycle.retryScheduler.shutdown();
     try {
-      if (!retryScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
-        retryScheduler.shutdownNow();
+      if (!lifecycle.retryScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+        lifecycle.retryScheduler.shutdownNow();
       }
     } catch (InterruptedException e) {
-      retryScheduler.shutdownNow();
+      lifecycle.retryScheduler.shutdownNow();
       Thread.currentThread().interrupt();
     }
   }
@@ -562,6 +587,14 @@ public class ElasticIndexWriter implements IndexWriter {
   @Override
   public Configuration getConf() {
     return config;
+  }
+
+  private static final class BulkLifecycle {
+    private BulkIngester<RetryContext> bulkIngester;
+    private ScheduledExecutorService retryScheduler;
+    private final AtomicInteger scheduledRetries = new AtomicInteger();
+    private final AtomicInteger activeBulkCallbacks = new AtomicInteger();
+    private volatile boolean closing;
   }
 
   static final class RetryContext {

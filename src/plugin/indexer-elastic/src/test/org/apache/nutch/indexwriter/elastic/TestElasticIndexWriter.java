@@ -93,9 +93,7 @@ public class TestElasticIndexWriter {
   @Test
   void testBulkDrainReportsTimeout() throws Exception {
     ElasticIndexWriter writer = new ElasticIndexWriter();
-    writer.open(new IndexWriterParams(Map.of(
-        ElasticConstants.HOSTS, "localhost",
-        ElasticConstants.PORT, "9200")));
+    writer.open(testWriterParams());
     var listener = writer.bulkListener();
 
     listener.beforeBulk(1L, null, List.of());
@@ -105,10 +103,29 @@ public class TestElasticIndexWriter {
     writer.close();
   }
 
+  @Test
+  void testOpenStartsNewLifecycle() throws Exception {
+    ElasticIndexWriter writer = new ElasticIndexWriter();
+    writer.open(testWriterParams());
+    writer.close();
+    assertTrue(writer.isClosing());
+
+    writer.open(testWriterParams());
+    assertFalse(writer.isClosing());
+    assertEquals(0, writer.activeBulkCallbacks());
+    writer.close();
+  }
+
   private static BulkResponse successfulBulkResponse() {
     return BulkResponse.of(builder -> builder
         .errors(false)
         .items(List.of())
         .took(0));
+  }
+
+  private static IndexWriterParams testWriterParams() {
+    return new IndexWriterParams(Map.of(
+        ElasticConstants.HOSTS, "localhost",
+        ElasticConstants.PORT, "9200"));
   }
 }
