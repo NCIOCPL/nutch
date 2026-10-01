@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import co.elastic.clients.elasticsearch.core.BulkResponse;
@@ -31,6 +33,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -134,6 +137,31 @@ public class TestElasticIndexWriter {
     assertTrue(writer.retryScheduler.isShutdown());
   }
 
+  @Test
+  void testQueuedRetryCannotAddOperationAfterCloseTimesOut() throws Exception {
+    CapturingElasticIndexWriter writer = new CapturingElasticIndexWriter();
+    IndexWriterParams params = new IndexWriterParams(Map.of(
+        ElasticConstants.HOSTS, "localhost",
+        ElasticConstants.PORT, "9200",
+        ElasticConstants.EXPONENTIAL_BACKOFF_MILLIS, "60000",
+        ElasticConstants.BULK_CLOSE_TIMEOUT, "0"));
+    writer.open(params);
+
+    var listener = writer.bulkListener();
+    var context = new ElasticIndexWriter.RetryContext(
+        writer.buildDeleteOperation("doc-1"), "delete document doc-1", 0);
+    listener.beforeBulk(1L, null, List.of(context));
+    listener.afterBulk(1L, null, List.of(context),
+        new RuntimeException("test failure"));
+
+    assertNotNull(writer.retryScheduler.scheduledCommand);
+    writer.close();
+    writer.retryScheduler.scheduledCommand.run();
+
+    assertTrue(writer.isClosing());
+    assertTrue(writer.awaitBulkCompletion(0, TimeUnit.MILLISECONDS));
+  }
+
   private static BulkResponse successfulBulkResponse() {
     return BulkResponse.of(builder -> builder
         .errors(false)
@@ -163,6 +191,33 @@ public class TestElasticIndexWriter {
     ScheduledExecutorService createRetryScheduler() {
       retryScheduler = super.createRetryScheduler();
       return retryScheduler;
+    }
+  }
+
+  private static final class CapturingElasticIndexWriter
+      extends ElasticIndexWriter {
+    private CapturingScheduledExecutor retryScheduler;
+
+    @Override
+    ScheduledExecutorService createRetryScheduler() {
+      retryScheduler = new CapturingScheduledExecutor();
+      return retryScheduler;
+    }
+  }
+
+  private static final class CapturingScheduledExecutor
+      extends ScheduledThreadPoolExecutor {
+    private Runnable scheduledCommand;
+
+    CapturingScheduledExecutor() {
+      super(1);
+    }
+
+    @Override
+    public ScheduledFuture<?> schedule(Runnable command, long delay,
+        TimeUnit unit) {
+      scheduledCommand = command;
+      return super.schedule(command, delay, unit);
     }
   }
 }

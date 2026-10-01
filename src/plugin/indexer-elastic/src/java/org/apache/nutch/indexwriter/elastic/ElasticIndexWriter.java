@@ -385,23 +385,29 @@ public class ElasticIndexWriter implements IndexWriter {
   public void close() throws IOException {
     IOException closeException = null;
     BulkLifecycle lifecycle = bulkLifecycle;
+    boolean bulkDrained = lifecycle.bulkIngester == null;
+    beginDraining(lifecycle);
     try {
       if (lifecycle.bulkIngester != null) {
         lifecycle.bulkIngester.flush();
-        if (awaitBulkCompletion(lifecycle, bulkCloseTimeout,
-            TimeUnit.SECONDS)) {
+        bulkDrained = awaitBulkCompletion(lifecycle, bulkCloseTimeout,
+            TimeUnit.SECONDS);
+        stopRetries(lifecycle);
+        if (bulkDrained) {
           lifecycle.bulkIngester.close();
         }
       }
     } catch (InterruptedException e) {
+      bulkDrained = false;
       Thread.currentThread().interrupt();
       LOG.warn("interrupted while waiting for BulkIngester to complete ({})",
           e.getMessage());
     } catch (RuntimeException e) {
+      bulkDrained = false;
       closeException = new IOException("Error closing BulkIngester", e);
     } finally {
-      lifecycle.closing = true;
-      shutdownRetryScheduler(lifecycle);
+      stopRetries(lifecycle);
+      shutdownRetryScheduler(lifecycle, !bulkDrained);
     }
 
     try {
@@ -462,14 +468,21 @@ public class ElasticIndexWriter implements IndexWriter {
   }
 
   private void addOperation(BulkOperation operation, String description) {
-    bulkLifecycle.bulkIngester.add(operation,
-        new RetryContext(operation, description, 0));
+    BulkLifecycle lifecycle = bulkLifecycle;
+    synchronized (lifecycle) {
+      if (lifecycle.state != BulkLifecycleState.OPEN) {
+        throw new IllegalStateException(
+            "Cannot add an Elasticsearch operation while the writer is closing");
+      }
+      lifecycle.bulkIngester.add(operation,
+          new RetryContext(operation, description, 0));
+    }
   }
 
   private void scheduleRetry(BulkLifecycle lifecycle, RetryContext context,
       String reason) {
-    if (lifecycle.closing) {
-      LOG.warn("Skipping Elasticsearch retry for {} because writer is closing: {}",
+    if (lifecycle.state == BulkLifecycleState.STOPPED) {
+      LOG.warn("Skipping Elasticsearch retry for {} because retries have stopped: {}",
           context.description, reason);
       return;
     }
@@ -486,7 +499,15 @@ public class ElasticIndexWriter implements IndexWriter {
     try {
       lifecycle.retryScheduler.schedule(() -> {
         try {
-          lifecycle.bulkIngester.add(retryContext.operation, retryContext);
+          synchronized (lifecycle) {
+            if (lifecycle.state == BulkLifecycleState.STOPPED) {
+              LOG.warn(
+                  "Skipping scheduled Elasticsearch retry for {} because retries have stopped",
+                  retryContext.description);
+              return;
+            }
+            lifecycle.bulkIngester.add(retryContext.operation, retryContext);
+          }
         } catch (RuntimeException e) {
           LOG.error("Elasticsearch retry failed for {}:",
               retryContext.description, e);
@@ -542,14 +563,33 @@ public class ElasticIndexWriter implements IndexWriter {
   }
 
   boolean isClosing() {
-    return bulkLifecycle.closing;
+    return bulkLifecycle.state != BulkLifecycleState.OPEN;
   }
 
-  private void shutdownRetryScheduler(BulkLifecycle lifecycle) {
+  private void beginDraining(BulkLifecycle lifecycle) {
+    synchronized (lifecycle) {
+      if (lifecycle.state == BulkLifecycleState.OPEN) {
+        lifecycle.state = BulkLifecycleState.DRAINING;
+      }
+    }
+  }
+
+  private void stopRetries(BulkLifecycle lifecycle) {
+    synchronized (lifecycle) {
+      lifecycle.state = BulkLifecycleState.STOPPED;
+    }
+  }
+
+  private void shutdownRetryScheduler(BulkLifecycle lifecycle,
+      boolean cancelPending) {
     if (lifecycle.retryScheduler == null) {
       return;
     }
-    lifecycle.retryScheduler.shutdown();
+    if (cancelPending) {
+      lifecycle.retryScheduler.shutdownNow();
+    } else {
+      lifecycle.retryScheduler.shutdown();
+    }
     try {
       if (!lifecycle.retryScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
         lifecycle.retryScheduler.shutdownNow();
@@ -641,7 +681,13 @@ public class ElasticIndexWriter implements IndexWriter {
     private ScheduledExecutorService retryScheduler;
     private final AtomicInteger scheduledRetries = new AtomicInteger();
     private final AtomicInteger activeBulkCallbacks = new AtomicInteger();
-    private volatile boolean closing;
+    private volatile BulkLifecycleState state = BulkLifecycleState.OPEN;
+  }
+
+  private enum BulkLifecycleState {
+    OPEN,
+    DRAINING,
+    STOPPED
   }
 
   static final class RetryContext {
