@@ -102,11 +102,11 @@
 		<dependency org="org.apache.cxf" name="cxf-rt-transports-http" rev="3.6.11" conf="*->default" />
 		<dependency org="org.apache.cxf" name="cxf-rt-transports-http-jetty" rev="3.6.11" conf="*->default" />
 		<dependency org="org.apache.cxf" name="cxf-rt-rs-client" rev="3.6.11" conf="test->default" />
-		<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.9" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.9" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.9" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.9" conf="*->default" />
-		<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.18.9" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.18.11" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.18.11" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.core" name="jackson-annotations" rev="2.18.11" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.18.11" conf="*->default" />
+		<dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.18.11" conf="*->default" />
 
 		<!-- WARC artifacts needed -->
 		<dependency org="org.netpreserve.commons" name="webarchive-commons" rev="3.0.2" conf="*->default">
@@ -136,7 +136,7 @@
 
         <!-- Testcontainers for indexer plugin integration tests -->
         <dependency org="org.testcontainers" name="testcontainers" rev="2.0.3" conf="test->default"/>
-        <dependency org="org.testcontainers" name="junit-jupiter" rev="1.21.4" conf="test->default"/>
+        <dependency org="org.testcontainers" name="testcontainers-junit-jupiter" rev="2.0.3" conf="test->default"/>
 
 		<!-- Jetty used to serve test pages for unit tests, but is also provided as dependency of Hadoop -->
 		<dependency org="org.eclipse.jetty" name="jetty-server" rev="12.1.5" conf="test->default">

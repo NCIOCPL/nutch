@@ -38,15 +38,15 @@
 
   <dependencies>
 
-    <!-- Override jsoup version to 1.23.1 -->
-    <dependency org="org.jsoup" name="jsoup" rev="1.23.1" conf="*->default" force="true" />
+    <!-- Override jsoup version to 1.23.2 -->
+    <dependency org="org.jsoup" name="jsoup" rev="1.23.2" conf="*->default" force="true" />
 
     <!-- Fix CVE-2026-86071 in Tika's transitive junrar dependency. -->
-    <dependency org="com.github.junrar"
-                name="junrar"
-                rev="7.6.1"
-                conf="*->default"
-                force="true" />
+    <dependency org="com.github.junrar" name="junrar" rev="7.6.1" conf="*->default" force="true" />
+
+    <!-- Override Tika's vulnerable transitive Jackson dependencies. -->
+    <dependency org="com.fasterxml.jackson.core" name="jackson-core" rev="2.22.3" conf="*->default" force="true"/>
+    <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.22.3" conf="*->default" force="true"/>
 
     <dependency org="org.apache.tika" name="tika-parsers-standard-package" rev="3.3.2" conf="*->default">
       <!-- exclusions of dependencies provided in Nutch core (ivy/ivy.xml) -->
