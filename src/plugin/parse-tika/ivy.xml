@@ -38,8 +38,8 @@
 
   <dependencies>
 
-    <!-- Override jsoup version to 1.23.1 -->
-    <dependency org="org.jsoup" name="jsoup" rev="1.23.1" conf="*->default" force="true" />
+    <!-- Override jsoup version to 1.23.2 -->
+    <dependency org="org.jsoup" name="jsoup" rev="1.23.2" conf="*->default" force="true" />
 
     <!-- Fix CVE-2026-86071 in Tika's transitive junrar dependency. -->
     <dependency org="com.github.junrar" name="junrar" rev="7.6.1" conf="*->default" force="true" />
