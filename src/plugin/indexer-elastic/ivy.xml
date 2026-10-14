@@ -41,8 +41,11 @@
     <dependency org="co.elastic.clients" name="elasticsearch-java" rev="8.16.7">
       <!-- 8.16.7 has no matching low-level rest-client artifact. -->
       <exclude org="org.elasticsearch.client" module="elasticsearch-rest-client"/>
+      <exclude org="org.apache.logging.log4j" module="*"/>
     </dependency>
-    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-client" rev="8.16.6"/>
+    <dependency org="org.elasticsearch.client" name="elasticsearch-rest-client" rev="8.16.6">
+      <exclude org="org.apache.logging.log4j" module="*"/>
+    </dependency>
 
   </dependencies>
 
