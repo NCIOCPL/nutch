@@ -80,6 +80,7 @@
 		<dependency org="org.apache.zookeeper" name="zookeeper-jute" rev="3.8.6" conf="*->default" force="true" />
 		<dependency org="com.nimbusds" name="nimbus-jose-jwt" rev="9.37.4" conf="*->default" force="true" />
 		<dependency org="org.bouncycastle" name="bcprov-jdk18on" rev="1.85" conf="*->default" force="true" />
+		<dependency org="org.xerial.snappy" name="snappy-java" rev="1.1.10.9" conf="*->default" force="true" />
 
 		<dependency org="org.apache.tika" name="tika-core" rev="3.3.2" conf="*->default"/>
 
@@ -88,7 +89,7 @@
 
 		<dependency org="com.ibm.icu" name="icu4j" rev="78.1" />
 
-		<dependency org="com.google.guava" name="guava" rev="33.5.0-jre" />
+		<dependency org="com.google.guava" name="guava" rev="33.7.2-jre" />
 
 		<dependency org="com.github.crawler-commons" name="crawler-commons" rev="1.6" />
 
