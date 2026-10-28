@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ElasticIndexWriterIT extends AbstractIndexWriterIT {
 
   private static final String ELASTICSEARCH_IMAGE =
-      "docker.elastic.co/elasticsearch/elasticsearch:8.16.6";
+      "docker.elastic.co/elasticsearch/elasticsearch:8.19.23";
   private static final String TEST_INDEX = "test-index";
 
   @Container
