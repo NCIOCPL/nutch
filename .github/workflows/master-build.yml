@@ -106,6 +106,8 @@ jobs:
               - 'src/plugin/**'
             indexer_plugins:
               - 'src/plugin/indexer-*/**'
+              - 'src/test/org/apache/nutch/indexer/AbstractIndexWriterIT.java'
+              - 'src/test/org/apache/nutch/indexer/IndexWriterIntegrationTest.java'
             buildconf:
               - 'build.xml'
               - 'ivy/ivy.xml'
@@ -122,6 +124,9 @@ jobs:
       - name: test plugins
         if: ${{ steps.filter.outputs.plugins == 'true' && steps.filter.outputs.core == 'false' && steps.filter.outputs.buildconf == 'false' }}
         run: ant clean test-plugins -buildfile build.xml
+      - name: test indexer integrations
+        if: ${{ matrix.os == 'ubuntu-latest' && (steps.filter.outputs.indexer_plugins == 'true' || steps.filter.outputs.buildconf == 'true') }}
+        run: ant test-indexer-integration -buildfile build.xml
       - name: Check for test results
         id: check_tests
         if: always() && matrix.os == 'ubuntu-latest'
